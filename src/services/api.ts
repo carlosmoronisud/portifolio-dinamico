@@ -404,8 +404,7 @@ private transformGoogleData(apiResponse: GoogleSheetsApiResponse): PortfolioData
     message: string;
   }): Promise<boolean> {
     console.log('📧 Mensagem de contato:', data);
-    // Aqui você pode implementar o envio para outra aba do Google Sheets
-    // ou para um serviço de email
+   
     return true;
   }
 }
