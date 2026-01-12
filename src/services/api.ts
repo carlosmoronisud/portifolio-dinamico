@@ -127,12 +127,13 @@ export class PortfolioService {
 
     try {
       console.log('🔄 Buscando dados da API:', apiUrl);
-      const response = await fetch(apiUrl, {
-        headers: {
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache'
-        }
-      });
+      
+const response = await fetch(apiUrl, {
+  headers: {
+    'Accept': 'application/json',
+    'Content-Type': 'text/plain' 
+  }
+});
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
