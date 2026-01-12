@@ -1,54 +1,58 @@
 // Interface para a resposta direta da API do Google Sheets
-
-interface GoogleSheetsResponse {
-  config: Array<{
-    name: string;
-    title: string;
-    bio: string;
-    email: string;
-    linkedin?: string;
-    github?: string;
-    location?: string;
-    avatar?: string;
-  }>;
-  skills: Array<{
-    category: string;
-    name: string;
-    level: number;
-    icon: string;
-  }>;
-  experience: Array<{
-    company: string;
-    role: string;
-    period: string;
-    description: string;
-    tags: string[];
-    highlight: boolean;
-  }>;
-  projects: Array<{
-    id: number;
-    title: string;
-    problem: string;
-    solution: string;
-    result: string;
-    technologies: string[];
-    imageUrl?: string;
-    liveUrl?: string;
-    category: string;
-  }>;
-  education: Array<{
-    institution: string;
-    course: string;
-    period: string;
-    type: string;
-    description: string;
-  }>;
-  contact: Array<{
-    type: string;
-    value: string;
-    label: string;
-    priority: number;
-  }>;
+// Interface para a resposta completa da API
+interface GoogleSheetsApiResponse {
+  success: boolean;
+  data: {
+    config: Array<{
+      name: string;
+      title: string;
+      bio: string;
+      email: string;
+      linkedin?: string;
+      github?: string;
+      location?: string;
+      avatar?: string;
+    }>;
+    skills: Array<{
+      category: string;
+      name: string;
+      level: number;
+      icon: string;
+    }>;
+    experience: Array<{
+      company: string;
+      role: string;
+      period: string;
+      description: string;
+      tags: string[];
+      highlight: boolean;
+    }>;
+    projects: Array<{
+      id: number;
+      title: string;
+      problem: string;
+      solution: string;
+      result: string;
+      technologies: string[];
+      imageUrl?: string;
+      liveUrl?: string;
+      category: string;
+    }>;
+    education: Array<{
+      institution: string;
+      course: string;
+      period: string;
+      type: string;
+      description: string;
+    }>;
+    contact: Array<{
+      type: string;
+      value: string;
+      label: string;
+      priority: number;
+    }>;
+  };
+  timestamp: string;
 }
 
 // Import das nossas interfaces
@@ -63,7 +67,6 @@ import type {
   Education,
   ContactLink
 } from '../types/portfolio';
-
 // URL da API do Google Apps Script
 // URL da API do Google Apps Script
 const API_URL = import.meta.env.VITE_GOOGLE_SHEETS_API_URL || '';
@@ -87,9 +90,14 @@ const getAPIUrl = () => {
 };
 
 
+// No seu arquivo services/api.ts (PortfolioService)
 export class PortfolioService {
   private static instance: PortfolioService;
   private useMockData: boolean;
+  private cache: PortfolioData | null = null;
+  private lastFetchTime: number = 0;
+  private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutos em milissegundos
+  private refreshCallbacks: Array<() => void> = [];
 
   private constructor() {
     this.useMockData = !API_URL || API_URL === '';
@@ -102,18 +110,24 @@ export class PortfolioService {
     return PortfolioService.instance;
   }
 
-  async fetchPortfolioData(): Promise<PortfolioData> {
+  async fetchPortfolioData(forceRefresh = false): Promise<PortfolioData> {
     const apiUrl = getAPIUrl();
     
+    // Verificar cache se não for forçado
+    const now = Date.now();
+    if (!forceRefresh && this.cache && (now - this.lastFetchTime) < this.CACHE_DURATION) {
+      console.log('📦 Usando dados em cache');
+      return this.cache;
+    }
+
     if (!apiUrl || this.useMockData) {
-      console.log('⚠️ Usando dados mockados (API_URL não configurada ou em desenvolvimento)');
+      console.log('⚠️ Usando dados mockados');
       return this.getMockData();
     }
 
     try {
       console.log('🔄 Buscando dados da API:', apiUrl);
       const response = await fetch(apiUrl, {
-        // Adicionar headers para evitar cache
         headers: {
           'Cache-Control': 'no-cache',
           'Pragma': 'no-cache'
@@ -131,23 +145,70 @@ export class PortfolioService {
         googleData = JSON.parse(text);
       } catch (parseError) {
         console.error('❌ Erro ao parsear JSON:', parseError);
-        console.log('Texto recebido:', text.substring(0, 200));
         throw new Error('Resposta não é um JSON válido');
       }
       
-      console.log('✅ Dados recebidos da API:', googleData);
+      console.log('✅ Dados recebidos da API:', {
+        timestamp: googleData.timestamp,
+        config: googleData.data?.config?.[0]?.name || 'N/A'
+      });
       
-      // Transformar dados do Google Sheets para nosso formato
-      return this.transformGoogleData(googleData);
+      // Transformar e armazenar em cache
+      const transformedData = this.transformGoogleData(googleData);
+      this.cache = transformedData;
+      this.lastFetchTime = now;
+      
+      // Notificar todos os subscribers que os dados foram atualizados
+      this.notifyRefresh();
+      
+      return transformedData;
       
     } catch (error) {
-      console.error('❌ Erro ao buscar dados da API:', error);
-      console.log('🔄 Usando fallback para dados mockados');
+      console.error('❌ Erro ao buscar dados:', error);
       return this.getMockData();
     }
   }
 
-  private transformGoogleData(googleData: GoogleSheetsResponse): PortfolioData {
+  // Método para forçar refresh
+  async refreshData(): Promise<PortfolioData> {
+    console.log('🔄 Forçando refresh dos dados...');
+    return this.fetchPortfolioData(true);
+  }
+
+  // Limpar cache
+  clearCache(): void {
+    this.cache = null;
+    this.lastFetchTime = 0;
+    console.log('🗑️ Cache limpo');
+  }
+
+  // Gerenciamento de callbacks para refresh
+  onRefresh(callback: () => void): void {
+    this.refreshCallbacks.push(callback);
+  }
+
+  offRefresh(callback: () => void): void {
+    this.refreshCallbacks = this.refreshCallbacks.filter(cb => cb !== callback);
+  }
+
+  private notifyRefresh(): void {
+    this.refreshCallbacks.forEach(callback => callback());
+  }
+
+  // Método para obter timestamp do último fetch
+  getLastFetchTime(): number {
+    return this.lastFetchTime;
+  }
+
+private transformGoogleData(apiResponse: GoogleSheetsApiResponse): PortfolioData {
+  // Verificar se a resposta foi bem sucedida
+  if (!apiResponse.success) {
+    throw new Error('Resposta da API não foi bem sucedida');
+  }
+  
+  // Extrair os dados da resposta
+  const googleData = apiResponse.data;
+  
   // Extrair informações pessoais
   const config = googleData.config?.[0] || {};
   
@@ -161,7 +222,6 @@ export class PortfolioService {
     // Usar avatar da planilha ou fallback padrão
     avatar: config.avatar || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face'
   };
-
 
     // Habilidades agrupadas por categoria
     const skillCategoriesMap = new Map<string, Skill[]>();

@@ -11,7 +11,6 @@ import LoadingSpinner from './components/LoadingSpinner';
 import { PortfolioProvider } from './context/PortfolioContext';
 import { usePortfolio } from './hooks/usePortfolio';
 
-// Componente principal que usa o contexto
 const PortfolioContent = () => {
   const { loading } = usePortfolio();
 
@@ -22,23 +21,23 @@ const PortfolioContent = () => {
   return (
     <>
       <Header />
-      <main>
-        <section id="home">
+      <main className="pt-16 bg-dark">
+        <section id="home" className="section-padding">
           <Hero />
         </section>
-        <section id="skills" className="section-padding bg-white">
+        <section id="skills" className="section-padding bg-dark-card">
           <Skills />
         </section>
-        <section id="experience" className="section-padding bg-gray-50">
+        <section id="experience" className="section-padding">
           <Experience />
         </section>
-        <section id="projects" className="section-padding bg-white">
+        <section id="projects" className="section-padding bg-dark-card">
           <Projects />
         </section>
-        <section id="education" className="section-padding bg-gray-50">
+        <section id="education" className="section-padding">
           <Education />
         </section>
-        <section id="contact" className="section-padding bg-white">
+        <section id="contact" className="section-padding bg-dark-card">
           <Contact />
         </section>
       </main>
@@ -51,7 +50,7 @@ function App() {
   return (
     <PortfolioProvider>
       <Router>
-        <div className="min-h-screen bg-linear-to-b from-gray-50 to-white">
+        <div className="min-h-screen bg-dark text-light">
           <PortfolioContent />
         </div>
       </Router>

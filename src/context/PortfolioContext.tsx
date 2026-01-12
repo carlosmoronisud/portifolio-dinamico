@@ -5,6 +5,7 @@ import type { PortfolioData } from '../types/portfolio'; // Import type
 
 export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [data, setData] = useState<PortfolioData | null>(null);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const portfolioService = PortfolioService.getInstance();

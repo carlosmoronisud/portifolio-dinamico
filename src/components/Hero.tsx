@@ -1,103 +1,75 @@
 import { usePortfolio } from '../hooks/usePortfolio';
-import { Mail, MapPin, Phone } from 'lucide-react';
-import LoadingSpinner from './LoadingSpinner';
-import Avatar from './Avatar';
+import { ChevronDown, Mail, MapPin } from 'lucide-react';
 
 const Hero = () => {
-  const { data, loading } = usePortfolio();
+  const { data } = usePortfolio();
 
-  if (loading) return <LoadingSpinner />;
-  if (!data) return null;
-
-  const { personalInfo } = data;
+  if (!data?.personalInfo) return null;
 
   return (
-    <div className="pt-24 pb-16 px-4 md:px-8 lg:px-16">
-      <div className="container mx-auto">
-        <div className="grid md:grid-cols-2 gap-12 items-center">
-          {/* Left Column - Text */}
-          <div className="space-y-6 animate-fade-in">
-            <div>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900">
-                {personalInfo.name}
-              </h1>
-              <h2 className="text-2xl md:text-3xl mt-2 gradient-text font-semibold">
-                {personalInfo.title}
-              </h2>
-            </div>
-            
-            <p className="text-lg text-gray-600 leading-relaxed">
-              {personalInfo.bio}
+    <div className="container mx-auto">
+      <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
+        {/* Text Content */}
+        <div className="lg:w-2/3 space-y-8 animate-smooth-slide-up">
+          <div>
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-light mb-4">
+              {data.personalInfo.name}
+            </h1>
+            <h2 className="text-xl md:text-2xl text-primary-400 font-semibold mb-6">
+              {data.personalInfo.title}
+            </h2>
+            <p className="text-lg text-gray-300 max-w-3xl">
+              {data.personalInfo.bio}
             </p>
-            
-            <div className="space-y-3">
-              {personalInfo.email && (
-                <div className="flex items-center space-x-3 text-gray-700">
-                  <Mail size={20} className="text-primary-500" />
-                  <a 
-                    href={`mailto:${personalInfo.email}`}
-                    className="hover:text-primary-600 transition-colors"
-                  >
-                    {personalInfo.email}
-                  </a>
-                </div>
-              )}
-              
-              {personalInfo.phone && (
-                <div className="flex items-center space-x-3 text-gray-700">
-                  <Phone size={20} className="text-primary-500" />
-                  <a 
-                    href={`tel:${personalInfo.phone}`}
-                    className="hover:text-primary-600 transition-colors"
-                  >
-                    {personalInfo.phone}
-                  </a>
-                </div>
-              )}
-              
-              {personalInfo.location && (
-                <div className="flex items-center space-x-3 text-gray-700">
-                  <MapPin size={20} className="text-primary-500" />
-                  <span>{personalInfo.location}</span>
-                </div>
-              )}
-            </div>
-            
-            <div className="pt-4">
-              <a
-                href="#contact"
-                className="inline-flex items-center px-6 py-3 bg-primary-500 text-white font-semibold rounded-lg hover:bg-primary-600 transition-colors shadow-lg hover:shadow-xl"
-              >
-                Entre em Contato
-              </a>
-            </div>
           </div>
           
-          {/* Right Column - Avatar DINÂMICO */}
-          <div className="flex justify-center animate-slide-up">
-            <div className="relative">
-              <div className="relative group">
-                {/* Avatar da planilha */}
-                <Avatar 
-                  src={personalInfo.avatar ?? ''}
-                  alt={personalInfo.name}
-                  size="xl"
-                  className="animate-slide-up"
-                />
-                
-                {/* Indicador de que a foto é editável */}
-                <div className="absolute inset-0 bg-linear-to-br from-primary-500/10 to-transparent rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              </div>
-              
-              {/* Decorative elements */}
-              <div className="absolute -top-4 -right-4 w-24 h-24 bg-primary-100 rounded-full -z-10 animate-pulse"></div>
-              <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-primary-50 rounded-full -z-10"></div>
-              
-              {/* Badge indicando que é editável */}
-              <div className="absolute -bottom-2 right-4 bg-white px-3 py-1 rounded-full shadow-md text-xs font-medium text-gray-700">
-                Foto editável
-              </div>
+          {/* Contact Info */}
+          <div className="flex flex-wrap items-center gap-6">
+            <div className="flex items-center space-x-2 text-gray-300">
+              <Mail size={18} className="text-primary-400" />
+              <span>{data.personalInfo.email}</span>
             </div>
+            
+            {data.personalInfo.location && (
+              <div className="flex items-center space-x-2 text-gray-300">
+                <MapPin size={18} className="text-primary-400" />
+                <span>{data.personalInfo.location}</span>
+              </div>
+            )}
+          </div>
+          
+          {/* Buttons */}
+          <div className="flex flex-wrap gap-4">
+            <a
+              href="#contact"
+              className="inline-flex items-center space-x-2 px-6 py-3 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-all duration-300 shadow-lg hover:shadow-primary-900/30"
+            >
+              <span>Entre em Contato</span>
+            </a>
+            
+            <a
+              href="#projects"
+              className="inline-flex items-center space-x-2 px-6 py-3 border border-primary-500 text-primary-400 font-medium rounded-lg hover:bg-primary-900/30 transition-all duration-300"
+            >
+              <span>Ver Projetos</span>
+              <ChevronDown size={20} />
+            </a>
+          </div>
+        </div>
+        
+        {/* Avatar */}
+        <div className="lg:w-1/3 flex justify-center">
+          <div className="relative">
+            <div className="w-64 h-64 md:w-80 md:h-80 rounded-full overflow-hidden border-4 border-primary-500 shadow-2xl">
+              <img
+                src={data.personalInfo.avatar}
+                alt={data.personalInfo.name}
+                className="w-full h-full object-cover"
+              />
+            </div>
+            {/* Decorative elements */}
+            <div className="absolute -top-4 -right-4 w-20 h-20 bg-primary-500/20 rounded-full blur-xl"></div>
+            <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-primary-600/20 rounded-full blur-xl"></div>
           </div>
         </div>
       </div>
