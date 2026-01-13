@@ -23,7 +23,7 @@ const Skills = () => {
           Habilidades & Competências
         </h2>
         <p className="text-muted max-w-2xl mx-auto">
-          Tecnologias e ferramentas que utilizo para criar soluções digitais
+          Tecnologias e ferramentas que utilizo
         </p>
       </div>
       
@@ -61,7 +61,7 @@ const Skills = () => {
                   
                   <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-primary-500 to-primary-600 rounded-full transition-all duration-1000 ease-out shadow-inner"
+                      className="h-full bg-linear-to-r from-primary-500 to-primary-600 rounded-full transition-all duration-1000 ease-out shadow-inner"
                       style={{ width: `${skill.level}%` }}
                     />
                   </div>

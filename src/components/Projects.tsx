@@ -22,11 +22,10 @@ const Projects = () => {
             {project.featured && (
               <span className="px-3 py-1 bg-primary-900/30 text-primary-300 text-xs font-semibold rounded-full border border-primary-800/50">
                 <Star size={14} className="inline mr-1" />
-                Destaque
               </span>
             )}
           </div>
-          <p className="text-gray-400">{project.description}</p>
+          {/* <p className="text-gray-400">{project.description}</p> */}
         </div>
         
         <div className="space-y-4 grow">
@@ -111,11 +110,11 @@ const Projects = () => {
     <div className="container mx-auto px-4">
       <div className="text-center mb-12">
         <h2 className="text-3xl md:text-4xl font-bold text-light mb-4">
-          Projetos Destacados
+          Projetos
         </h2>
-        <p className="text-muted max-w-2xl mx-auto">
+        {/* <p className="text-muted max-w-2xl mx-auto">
           Soluções desenvolvidas com impacto real e resultados mensuráveis
-        </p>
+        </p> */}
       </div>
       
       <div className="max-w-7xl mx-auto">
