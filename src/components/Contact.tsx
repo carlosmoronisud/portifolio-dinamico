@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { usePortfolio } from '../hooks/usePortfolio';
 import { Mail, Phone, MapPin, Send, Linkedin, Github, Globe, MessageCircle, Link, User, MessageSquare } from 'lucide-react';
-import { PortfolioService } from '../services/api';
 
 const Contact = () => {
   const { data } = usePortfolio();
@@ -12,22 +11,55 @@ const Contact = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [error, setError] = useState('');
 
   if (!data) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
+    setError('');
+
     try {
-      const portfolioService = PortfolioService.getInstance();
-      await portfolioService.sendContactMessage(formData);
-      setIsSubmitted(true);
-      setFormData({ name: '', email: '', message: '' });
+      // Cria um novo FormData para enviar
+      const submitFormData = new FormData();
+      submitFormData.append('name', formData.name);
+      submitFormData.append('email', formData.email);
+      submitFormData.append('message', formData.message);
+      submitFormData.append('_subject', `Novo contato de ${formData.name} - Portfolio`);
+      submitFormData.append('_captcha', 'false');
+      submitFormData.append('_replyto', formData.email);
+      submitFormData.append('_template', 'table');
+      submitFormData.append('_honey', ''); // Campo anti-spam
       
-      setTimeout(() => setIsSubmitted(false), 5000);
+      // Substitua pelo SEU email (o mesmo que você cadastrou no FormSubmit)
+      const YOUR_EMAIL = 'carlosmoronisud@gmail.com';
+      
+      console.log('📤 Enviando formulário para:', YOUR_EMAIL);
+      
+      const response = await fetch(`https://formsubmit.co/ajax/${YOUR_EMAIL}`, {
+        method: 'POST',
+        body: submitFormData,
+      });
+
+      console.log('📥 Resposta recebida:', response.status);
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log('✅ Sucesso:', result);
+        
+        setIsSubmitted(true);
+        setFormData({ name: '', email: '', message: '' });
+        setTimeout(() => setIsSubmitted(false), 5000);
+      } else {
+        const errorText = await response.text();
+        console.error('❌ Erro na resposta:', response.status, errorText);
+        throw new Error(`Erro ${response.status}: ${errorText}`);
+      }
+      
     } catch (error) {
-      console.error('Error sending message:', error);
+      console.error('❌ Error:', error);
+      setError('Não foi possível enviar a mensagem. Tente novamente mais tarde.');
     } finally {
       setIsSubmitting(false);
     }
@@ -150,8 +182,11 @@ const Contact = () => {
         {/* Right Column - Contact Form */}
         <div className="bg-dark-card rounded-xl shadow-lg p-6 border border-gray-800 animate-smooth-slide-up">
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Campo honeypot (invisível) para evitar spam */}
+            <input type="text" name="_honey" style={{ display: 'none' }} />
+            
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-2 flex items-center">
+              <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-2 items-center">
                 <User size={16} className="mr-2 text-primary-400" />
                 Nome *
               </label>
@@ -162,13 +197,14 @@ const Contact = () => {
                 required
                 value={formData.name}
                 onChange={handleChange}
-                className="w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors text-light placeholder-gray-500"
+                disabled={isSubmitting}
+                className="w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors text-light placeholder-gray-500 disabled:opacity-50"
                 placeholder="Seu nome completo"
               />
             </div>
             
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2 flex items-center">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2 items-center">
                 <Mail size={16} className="mr-2 text-primary-400" />
                 Email *
               </label>
@@ -179,13 +215,14 @@ const Contact = () => {
                 required
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors text-light placeholder-gray-500"
+                disabled={isSubmitting}
+                className="w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors text-light placeholder-gray-500 disabled:opacity-50"
                 placeholder="seu@email.com"
               />
             </div>
             
             <div>
-              <label htmlFor="message" className="block text-sm font-medium text-gray-300 mb-2 flex items-center">
+              <label htmlFor="message" className="block text-sm font-medium text-gray-300 mb-2 items-center">
                 <MessageSquare size={16} className="mr-2 text-primary-400" />
                 Mensagem *
               </label>
@@ -195,16 +232,30 @@ const Contact = () => {
                 required
                 value={formData.message}
                 onChange={handleChange}
+                disabled={isSubmitting}
                 rows={5}
-                className="w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors text-light placeholder-gray-500 resize-none"
+                className="w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors text-light placeholder-gray-500 resize-none disabled:opacity-50"
                 placeholder="Como posso ajudar você? Descreva seu projeto ou dúvida..."
               />
             </div>
             
+            {error && (
+              <div className="p-4 bg-red-900/20 text-red-300 rounded-lg border border-red-800/50 animate-fade-in">
+                <div className="flex items-center">
+                  <div className="w-6 h-6 bg-red-500/20 rounded-full flex items-center justify-center mr-3">
+                    <svg className="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                  </div>
+                  <span className="text-sm">{error}</span>
+                </div>
+              </div>
+            )}
+            
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full inline-flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-primary-600 to-primary-700 text-white font-semibold rounded-lg hover:from-primary-500 hover:to-primary-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-primary-900/30"
+              className="w-full inline-flex items-center justify-center space-x-2 px-6 py-3 bg-linear-to-r from-primary-600 to-primary-700 text-white font-semibold rounded-lg hover:from-primary-500 hover:to-primary-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-primary-900/30"
             >
               {isSubmitting ? (
                 <>

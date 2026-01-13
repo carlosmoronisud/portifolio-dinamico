@@ -67,6 +67,7 @@ import type {
   Education,
   ContactLink
 } from '../types/portfolio';
+
 // URL da API do Google Apps Script
 // URL da API do Google Apps Script
 const API_URL = import.meta.env.VITE_GOOGLE_SHEETS_API_URL || '';
@@ -167,6 +168,7 @@ export class PortfolioService {
       console.error('❌ Erro ao buscar dados:', error);
       return this.getMockData();
     }
+    
   }
 
   // Método para forçar refresh
@@ -398,13 +400,13 @@ private transformGoogleData(apiResponse: GoogleSheetsApiResponse): PortfolioData
     };
   }
 
-  async sendContactMessage(data: {
-    name: string;
-    email: string;
-    message: string;
-  }): Promise<boolean> {
-    console.log('📧 Mensagem de contato:', data);
+  // async sendContactMessage(data: {
+  //   name: string;
+  //   email: string;
+  //   message: string;
+  // }): Promise<boolean> {
+  //   console.log('📧 Mensagem de contato:', data);
    
-    return true;
-  }
+  //   return true;
+  // }
 }
