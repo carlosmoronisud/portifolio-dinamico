@@ -1,4 +1,4 @@
-import { Github, Linkedin, Heart, Code2, Palette, Zap, Rocket } from 'lucide-react';
+import { Github, Linkedin, Code2, Palette, Zap, Rocket, Hand } from 'lucide-react';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -47,7 +47,7 @@ const Footer = () => {
           <div className="text-right">
             <div className="flex justify-end space-x-3">
               <a
-                href="https://github.com/seuuser"
+                href="https://github.com/carlosmoronisud"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 bg-gray-800/50 rounded-lg hover:bg-primary-900/30 transition-all duration-300 border border-gray-700 hover:border-primary-500/50 group"
@@ -67,7 +67,7 @@ const Footer = () => {
             </div>
             <p className="text-gray-400 text-sm mt-3 flex items-center justify-end">
               Feito com 
-              <Heart size={14} className="mx-1 text-primary-500 animate-pulse-subtle" />
+              <Hand size={14} className="mx-1 text-primary-500 animate-pulse-subtle" />
               e dedicação
             </p>
           </div>
